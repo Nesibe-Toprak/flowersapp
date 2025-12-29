@@ -58,9 +58,9 @@ class DashboardPage extends StatelessWidget {
                
                PlantStage newStage = PlantStage.seed;
                if (percentage > 0.8) {
-                 newStage = PlantStage.bloom;
+                 newStage = PlantStage.flower;
                } else if (percentage > 0.5) {
-                 newStage = PlantStage.growth;
+                 newStage = PlantStage.plant;
                } else if (percentage > 0.2) {
                  newStage = PlantStage.sprout;
                } else {
@@ -72,7 +72,7 @@ class DashboardPage extends StatelessWidget {
                context.read<PlantBloc>().add(UpdatePlantStage(newStage));
                
                // Show Donation Dialog if bloom
-               if (newStage == PlantStage.bloom) {
+               if (newStage == PlantStage.flower) {
                   // Small delay to let the UI update first
                   Future.delayed(const Duration(seconds: 1), () {
                      if (context.mounted) {
@@ -330,12 +330,12 @@ class DashboardPage extends StatelessWidget {
           color = AppColors.sageGreen;
           size = 100;
           break;
-        case PlantStage.growth:
+        case PlantStage.plant:
           icon = Icons.local_florist;
           color = Colors.green;
           size = 120;
           break;
-        case PlantStage.bloom:
+        case PlantStage.flower:
           icon = Icons.filter_vintage;
           color = AppColors.accentPink;
           size = 140; // Big bloom

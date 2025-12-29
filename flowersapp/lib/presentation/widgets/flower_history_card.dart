@@ -100,7 +100,7 @@ class _FlowerHistoryCardState extends State<FlowerHistoryCard>
           ),
           const SizedBox(height: 8),
           // Badge ONLY if Growth (Most followed, but not all)
-          if (widget.cycle.status == PlantStage.growth)
+          if (widget.cycle.status == PlantStage.plant)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
@@ -148,8 +148,10 @@ class _FlowerHistoryCardState extends State<FlowerHistoryCard>
     switch (stage) {
       case PlantStage.seed: return Icons.grain;
       case PlantStage.sprout: return Icons.eco;
-      case PlantStage.growth: return Icons.local_florist;
-      case PlantStage.bloom: return Icons.filter_vintage;
+      case PlantStage.plant: return Icons.local_florist;
+      case PlantStage.bud: return Icons.nature;
+      case PlantStage.flower: return Icons.filter_vintage;
+      case PlantStage.withered: return Icons.sentiment_very_dissatisfied;
     }
   }
 
@@ -157,8 +159,10 @@ class _FlowerHistoryCardState extends State<FlowerHistoryCard>
     switch (stage) {
       case PlantStage.seed: return Colors.brown;
       case PlantStage.sprout: return AppColors.sageGreen;
-      case PlantStage.growth: return Colors.green;
-      case PlantStage.bloom: return AppColors.accentPink;
+      case PlantStage.plant: return Colors.green;
+      case PlantStage.bud: return Colors.grey;
+      case PlantStage.flower: return AppColors.accentPink;
+      case PlantStage.withered: return AppColors.darkGrey;
     }
   }
 }
