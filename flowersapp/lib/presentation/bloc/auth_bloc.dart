@@ -1,5 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/repositories/auth_repository.dart';
+//import 'package:supabase_flutter/supabase_flutter.dart';
+// "hide AuthState" ekleyerek çakışmayı önlüyoruz
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -31,8 +34,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       await _authRepository.signInWithEmail(event.email, event.password);
       // The stream subscription in _onCheckStatus will handle the state update
+    } on AuthException catch (e) {
+      emit(AuthError(_mapAuthErrorMessage(e.message)));
+      emit(AuthUnauthenticated());
     } catch (e) {
-      emit(AuthError(e.toString()));
+      emit(AuthError("Bir hata oluştu: ${e.toString()}"));
       emit(AuthUnauthenticated());
     }
   }
@@ -43,8 +49,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _authRepository.signUpWithEmail(event.email, event.password);
        // The stream subscription in _onCheckStatus will handle the state update
        // Note: Depending on Supabase settings, email confirmation might be required.
+    } on AuthException catch (e) {
+      emit(AuthError(_mapAuthErrorMessage(e.message)));
+      emit(AuthUnauthenticated());
     } catch (e) {
-      emit(AuthError(e.toString()));
+      emit(AuthError("Bir hata oluştu: ${e.toString()}"));
       emit(AuthUnauthenticated());
     }
   }
@@ -56,5 +65,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (e) {
       emit(AuthError(e.toString()));
     }
+  }
+  String _mapAuthErrorMessage(String message) {
+    if (message.contains('Invalid login credentials')) {
+      return 'E-posta veya şifre hatalı.';
+    } else if (message.contains('User already registered')) {
+      return 'Bu e-posta adresi zaten kayıtlı.';
+    } else if (message.contains('Password should be at least')) {
+        return 'Şifre en az 6 karakter olmalıdır.';
+    } else if (message.contains('Email not confirmed')) {
+      return 'Lütfen e-posta adresinizi doğrulayın.';
+    }
+    return 'Bir hata oluştu: $message';
   }
 }
