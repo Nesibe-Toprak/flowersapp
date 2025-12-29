@@ -1,7 +1,8 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/plant_stage.dart';
 import '../../domain/entities/weekly_cycle.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../domain/repositories/plant_repository.dart';
 // Event
 abstract class PlantEvent extends Equatable {
   const PlantEvent();
@@ -50,8 +51,8 @@ class PlantHistoryLoaded extends PlantState {
 }
 
 // Bloc
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/repositories/plant_repository.dart';
+//import 'package:flutter_bloc/flutter_bloc.dart';
+//import '../../domain/repositories/plant_repository.dart';
 
 class PlantBloc extends Bloc<PlantEvent, PlantState> {
   final PlantRepository _repository;
