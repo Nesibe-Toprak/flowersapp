@@ -93,8 +93,8 @@ class _LoginPageState extends State<LoginPage> {
                             onPressed: () {
                               context.read<AuthBloc>().add(
                                     AuthSignInRequested(
-                                      _emailController.text,
-                                      _passwordController.text,
+                                      _emailController.text.trim(),
+                                      _passwordController.text.trim(),
                                     ),
                                   );
                             },
@@ -119,8 +119,8 @@ class _LoginPageState extends State<LoginPage> {
                           onPressed: () {
                              context.read<AuthBloc>().add(
                                     AuthSignUpRequested(
-                                      _emailController.text,
-                                      _passwordController.text,
+                                      _emailController.text.trim(),
+                                      _passwordController.text.trim(),
                                     ),
                                   );
                           },
