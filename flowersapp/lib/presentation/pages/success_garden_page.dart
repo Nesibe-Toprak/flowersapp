@@ -6,8 +6,12 @@ import '../../presentation/widgets/badge_card.dart';
 import '../../presentation/widgets/flower_history_card.dart';
 import '../../domain/entities/plant_stage.dart';
 
+enum GardenViewMode { flowers, badges }
+
 class SuccessGardenPage extends StatefulWidget {
-  const SuccessGardenPage({super.key});
+  final GardenViewMode mode;
+
+  const SuccessGardenPage({super.key, required this.mode});
 
   @override
   State<SuccessGardenPage> createState() => _SuccessGardenPageState();
@@ -25,7 +29,7 @@ class _SuccessGardenPageState extends State<SuccessGardenPage> {
     return Scaffold(
       backgroundColor: AppColors.accentPink,
       appBar: AppBar(
-        title: const Text("Success Garden"),
+        title: Text(widget.mode == GardenViewMode.flowers ? "Başarı Bahçem 🏆" : "Başarı Rozetlerim 🏆"),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -41,130 +45,137 @@ class _SuccessGardenPageState extends State<SuccessGardenPage> {
             return const Center(child: CircularProgressIndicator());
           } 
           else if (state is PlantHistoryLoaded) {
-            final flowers = state.history;
+            // Filter flowers: Show everything EXCEPT perseverance badge
+            final displayedFlowers = state.history
+                .where((cycle) => cycle.status != PlantStage.perseverance_badge)
+                .toList();
+
+            // Filter badges: Show ONLY Perseverance Badge (Flowers are in Garden tab)
             final badgeCycles = state.history
                 .where((cycle) =>
-                    cycle.status == PlantStage.growth ||
-                    cycle.status == PlantStage.growth_second ||
-                    cycle.status == PlantStage.bud ||
-                    cycle.status == PlantStage.flower)
+                    cycle.status == PlantStage.perseverance_badge)
                 .toList();
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: CustomScrollView(
                 slivers: [
-                  // --- Çiçekler Başlığı ---
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.local_florist, color: AppColors.primaryText),
-                          const SizedBox(width: 8),
-                          Text(
-                            "Çiçek Koleksiyonum (${flowers.length})",
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: AppColors.primaryText,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  // --- Çiçekler Izgarası (Grid) ---
-                  flowers.isEmpty
-                      ? SliverToBoxAdapter(
-                          child: Container(
-                            height: 100,
-                            alignment: Alignment.center,
-                            child: const Text("Henüz bir çiçeğiniz yok. Büyütmeye başlayın!"),
-                          ),
-                        )
-                      : SliverGrid(
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3, 
-                            childAspectRatio: 0.8,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                          ),
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final flower = flowers[index];
-                              // Performans için Key ekledik
-                              return FlowerHistoryCard(
-                                key: ValueKey(flower.id), 
-                                cycle: flower
-                              );
-                            },
-                            childCount: flowers.length,
+                  if (widget.mode == GardenViewMode.flowers) ...[
+                      // --- Çiçekler Başlığı ---
+                      // ... (unchanged)
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          child: Row(
+                            children: [
+
+                              Text(
+                                "Çiçeklerim 🌸 (${displayedFlowers.length})",
+                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                      color: AppColors.primaryText,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                            ],
                           ),
                         ),
-
-                  // --- Rozetler Başlığı ---
-                   SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 32.0, bottom: 16.0),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.emoji_events, color: AppColors.primaryText),
-                          const SizedBox(width: 8),
-                          Text(
-                            "Rozetlerim (${badgeCycles.length})",
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: AppColors.primaryText,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                          ),
-                        ],
                       ),
-                    ),
-                  ),
+                      
+                      // --- Çiçekler Izgarası (Grid) ---
+                      displayedFlowers.isEmpty
+                          ? SliverToBoxAdapter(
+                              child: Container(
+                                height: 100,
+                                alignment: Alignment.center,
+                                child: const Text("Henüz bir çiçeğiniz yok. Büyütmeye başlayın!"),
+                              ),
+                            )
+                          : SliverGrid(
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3, 
+                                childAspectRatio: 0.8,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                              ),
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                                  final flower = displayedFlowers[index];
+                                  return FlowerHistoryCard(
+                                    key: ValueKey(flower.id), 
+                                    cycle: flower
+                                  );
+                                },
+                                childCount: displayedFlowers.length,
+                              ),
+                            ),
+                  ],
 
-                  // --- Rozetler Izgarası (Grid) ---
-                  badgeCycles.isEmpty
-                      ? SliverToBoxAdapter(
-                          child: Container(
-                            height: 100,
-                            alignment: Alignment.center,
-                            child: const Text("Rozet kazanmak için hedeflerinizi tamamlayın!"),
-                          ),
-                        )
-                      : SliverGrid(
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            childAspectRatio: 0.8,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                          ),
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final cycle = badgeCycles[index];
-                               String title = "Perseverance";
-                               String desc = "Great effort!";
-                               IconData icon = Icons.spa;
-
-                               if (cycle.status == PlantStage.flower) {
-                                 title = "Master";
-                                 desc = "Fully Bloomed!";
-                                 icon = Icons.local_florist;
-                               }
-                              
-                              return BadgeCard(
-                                key: ValueKey("badge_${cycle.id}"), // Rozetlere de key ekledik
-                                title: title,
-                                description: desc,
-                                dateEarned: cycle.endDate ?? cycle.startDate,
-                                icon: icon,
-                                cycleId: cycle.id,
-                                initialNote: cycle.note,
-                              );
-                            },
-                            childCount: badgeCycles.length,
+                  if (widget.mode == GardenViewMode.badges) ...[
+                      // --- Rozetler Başlığı ---
+                       SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                          child: Row(
+                            children: [
+                              Text(
+                                "Rozetlerim 🥇 (${badgeCycles.length})",
+                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                      color: AppColors.primaryText,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                            ],
                           ),
                         ),
+                      ),
+
+                      // --- Rozetler Izgarası (Grid) ---
+                      badgeCycles.isEmpty
+                          ? SliverToBoxAdapter(
+                              child: Container(
+                                height: 100,
+                                alignment: Alignment.center,
+                                child: const Text("Rozet kazanmak için hedeflerinizi tamamlayın!"),
+                              ),
+                            )
+                          : SliverGrid(
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                childAspectRatio: 0.8,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                              ),
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                                  final cycle = badgeCycles[index];
+                                   String title = "";
+                                   String desc = "";
+                                   IconData icon = Icons.spa;
+                                   String? assetPath;
+
+                                   if (cycle.status == PlantStage.perseverance_badge) {
+                                      title = "Başarı Rozeti";
+                                      desc = "Pes etmedin, başardın! Harika bir geri dönüş.";
+                                      icon = Icons.verified;
+                                      assetPath = 'assets/images/icon_badge.png';
+                                   }
+                                  
+                                  return BadgeCard(
+                                    key: ValueKey("badge_${cycle.id}"), 
+                                    title: title,
+                                    description: desc,
+                                    dateEarned: cycle.endDate ?? cycle.startDate,
+                                    icon: icon,
+                                    assetPath: assetPath, 
+                                    cycleId: cycle.id,
+                                    initialNote: cycle.note,
+                                    emoji: '🥇', // Added emoji
+                                  );
+                                },
+                                childCount: badgeCycles.length,
+                              ),
+                            ),
+                  ],
                   
                   // Alt boşluk
                   const SliverToBoxAdapter(child: SizedBox(height: 50)),
