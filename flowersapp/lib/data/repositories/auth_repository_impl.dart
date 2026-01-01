@@ -25,6 +25,7 @@ class AuthRepositoryImpl implements AuthRepository {
       data: {
         'username': username,
       },
+      emailRedirectTo: 'io.toprak.flowersapp://login-callback',
     );
   }
 
