@@ -1,21 +1,23 @@
 enum PlantStage {
   seed,
-  sprout,
-  plant,
+  germination,
+  seedling,
+  growth,
   bud,
-  flower,
-  withered // For broken chain
+  growth_second,
+  flower
 }
 
 extension PlantStageExtension on PlantStage {
   String get name {
     switch (this) {
-      case PlantStage.seed: return 'Seed';
-      case PlantStage.sprout: return 'Sprout';
-      case PlantStage.plant: return 'Plant';
-      case PlantStage.bud: return 'Bud';
-      case PlantStage.flower: return 'Flower';
-      case PlantStage.withered: return 'Withered';
+      case PlantStage.seed: return 'Tohum';
+      case PlantStage.germination: return 'Çimlenme';
+      case PlantStage.seedling: return 'Fide';
+      case PlantStage.growth: return 'Büyüme';
+      case PlantStage.bud: return 'Tomurcuk';
+      case PlantStage.growth_second: return 'Büyüme';
+      case PlantStage.flower: return 'Çiçek';
     }
   }
 
