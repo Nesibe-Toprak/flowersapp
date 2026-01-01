@@ -32,7 +32,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _onSignIn(AuthSignInRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      await _authRepository.signInWithEmail(event.email, event.password);
+      String? targetEmail = event.email;
+      
+      if (targetEmail == null && event.username != null) {
+        targetEmail = await _authRepository.getEmailFromUsername(event.username!);
+        if (targetEmail == null) {
+           emit(AuthError("Kullanıcı adı bulunamadı."));
+           emit(AuthUnauthenticated());
+           return;
+        }
+      }
+
+      if (targetEmail != null) {
+        await _authRepository.signInWithEmail(targetEmail, event.password);
+      } else {
+         emit(AuthError("E-posta veya kullanıcı adı gerekli."));
+         emit(AuthUnauthenticated());
+      }
       // The stream subscription in _onCheckStatus will handle the state update
     } on AuthException catch (e) {
       emit(AuthError(_mapAuthErrorMessage(e.message)));
@@ -46,9 +62,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _onSignUp(AuthSignUpRequested event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
     try {
-      await _authRepository.signUpWithEmail(event.email, event.password);
-       // The stream subscription in _onCheckStatus will handle the state update
-       // Note: Depending on Supabase settings, email confirmation might be required.
+      await _authRepository.signUpWithEmail(event.email, event.password, event.username);
+      emit(AuthSignUpSuccess());
+      emit(AuthUnauthenticated()); // Reset to unauthenticated so user can login or retry
     } on AuthException catch (e) {
       emit(AuthError(_mapAuthErrorMessage(e.message)));
       emit(AuthUnauthenticated());
