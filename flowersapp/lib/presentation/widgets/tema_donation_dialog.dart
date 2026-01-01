@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_colors.dart';
 
 class TemaDonationDialog extends StatelessWidget {
   const TemaDonationDialog({super.key});
@@ -40,7 +40,7 @@ class TemaDonationDialog extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
           child: Text(
             "Maybe Later",
-            style: TextStyle(color: AppColors.darkGrey.withOpacity(0.6)),
+            style: TextStyle(color: AppColors.primaryText.withOpacity(0.6)),
           ),
         ),
         ElevatedButton(
@@ -49,13 +49,13 @@ class TemaDonationDialog extends StatelessWidget {
             Navigator.pop(context);
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.sageGreen,
+            backgroundColor: AppColors.creamPeach,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           ),
           child: const Text(
             "Donate to TEMA",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppColors.primaryText, fontWeight: FontWeight.bold),
           ),
         ),
       ],
