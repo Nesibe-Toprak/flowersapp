@@ -52,13 +52,14 @@ class PlantRepositoryImpl implements PlantRepository {
       // 5 days -> Growth (Second phase)
       // 6-7 days -> Flower
       
-      if (completedDays >= 6) return PlantStage.flower;
+      if (completedDays >= 7) return PlantStage.flower;
       switch (completedDays) {
+        case 6: return PlantStage.bud;
         case 5: return PlantStage.growth_second;
-        case 4: return PlantStage.bud;
-        case 3: return PlantStage.growth;
-        case 2: return PlantStage.seedling;
-        case 1: return PlantStage.germination;
+        case 4: return PlantStage.growth;
+        case 3: return PlantStage.seedling;
+        case 2: return PlantStage.germination;
+        case 1: 
         case 0:
         default:
           return PlantStage.seed;
@@ -103,6 +104,51 @@ class PlantRepositoryImpl implements PlantRepository {
     } catch (e) {
       print('Error fetching plant history: $e');
       return [];
+    }
+  }
+  @override
+  Future<void> archiveAndResetWeek(PlantStage finalStage) async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) return;
+
+      // 1. Archive current cycle
+      // We assume the cycle started 7 days ago.
+      // Ideally we should track start_date in a 'current_cycle' table, 
+      // but for now we calculate.
+      final now = DateTime.now();
+      final startDate = now.subtract(const Duration(days: 6)); 
+
+      await _supabase.from('weekly_cycles').insert({
+        'user_id': userId,
+        'start_date': startDate.toIso8601String(),
+        'end_date': now.toIso8601String(),
+        'status': finalStage.toString().split('.').last,
+        // 'note': 'Weekly Goal Reached!' 
+      });
+
+      // 2. Clear daily habits for a fresh start
+      await _supabase
+          .from('daily_habits')
+          .delete()
+          .eq('user_id', userId);
+          
+    } catch (e) {
+      print('Error archiving and resetting week: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> updateCycleNote(String cycleId, String note) async {
+    try {
+      await _supabase
+          .from('weekly_cycles')
+          .update({'note': note})
+          .eq('id', cycleId);
+    } catch (e) {
+      print('Error updating note: $e');
+      rethrow;
     }
   }
 }
