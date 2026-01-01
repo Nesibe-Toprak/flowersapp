@@ -9,6 +9,7 @@ import '../../domain/entities/plant_stage.dart';
 import '../../presentation/widgets/tema_donation_dialog.dart';
 
 import 'success_garden_page.dart';
+import 'profile_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -37,7 +38,17 @@ class DashboardPage extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const SuccessGardenPage()),
               );
             },
-          )
+          ),
+          IconButton(
+            icon: const Icon(Icons.person, color: AppColors.darkGrey),
+            tooltip: 'Profile',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfilePage()),
+              );
+            },
+          ),
         ],
       ),
       body: SafeArea(
@@ -110,7 +121,7 @@ class DashboardPage extends StatelessWidget {
                               _buildPlantIcon(plantState),
                               const SizedBox(height: 16),
                               Text(
-                                'Day 1: $stageName',
+                                'Day ${(plannerState is PlannerLoaded) ? plannerState.selectedDate.weekday : DateTime.now().weekday}: $stageName',
                                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                       color: AppColors.darkGrey,
                                       fontWeight: FontWeight.bold,
@@ -136,7 +147,11 @@ class DashboardPage extends StatelessWidget {
                         final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
                         final date = startOfWeek.add(Duration(days: index));
                         
-                        return _buildDayBox(context, date); 
+                        final selectedDate = (plannerState is PlannerLoaded) 
+                            ? plannerState.selectedDate 
+                            : DateTime.now();
+
+                        return _buildDayBox(context, date, selectedDate);  
                       }),
                     ),
                   ),
@@ -195,52 +210,59 @@ class DashboardPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDayBox(BuildContext context, DateTime date) {
-    final now = DateTime.now();
-    final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
+  Widget _buildDayBox(BuildContext context, DateTime date, DateTime selectedDate) {
+    final isSelected = date.year == selectedDate.year && 
+                       date.month == selectedDate.month && 
+                       date.day == selectedDate.day;
+    
     final dayLabel = ['M', 'T', 'W', 'T', 'F', 'S', 'S'][date.weekday - 1];
     
-    return Container(
-      width: 44, // Slightly wider to fit day number
-      height: 60, // Taller for two lines of text
-      decoration: BoxDecoration(
-        color: isToday ? AppColors.creamPeach : Colors.transparent,
-        border: Border.all(
-          color: isToday ? AppColors.accentPink : AppColors.darkGrey.withOpacity(0.5),
-          width: isToday ? 2 : 1,
+    return GestureDetector(
+      onTap: () {
+        context.read<PlannerBloc>().add(PlannerLoadHabits(date));
+      },
+      child: Container(
+        width: 44, // Slightly wider to fit day number
+        height: 60, // Taller for two lines of text
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.creamPeach : Colors.transparent,
+          border: Border.all(
+            color: isSelected ? AppColors.accentPink : AppColors.darkGrey.withOpacity(0.5),
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(12), // Softer corners
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.accentPink.withOpacity(0.4),
+                    blurRadius: 8,
+                  )
+                ]
+              : [],
         ),
-        borderRadius: BorderRadius.circular(12), // Softer corners
-        boxShadow: isToday
-            ? [
-                BoxShadow(
-                  color: AppColors.accentPink.withOpacity(0.4),
-                  blurRadius: 8,
-                )
-              ]
-            : [],
-      ),
-      alignment: Alignment.center,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            dayLabel,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-              color: AppColors.darkGrey.withOpacity(0.8),
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              dayLabel,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: AppColors.darkGrey.withOpacity(0.8),
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${date.day}',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-              color: AppColors.darkGrey,
+            const SizedBox(height: 4),
+            Text(
+              '${date.day}',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: AppColors.darkGrey,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -392,7 +414,10 @@ class DashboardPage extends StatelessWidget {
       ),
     ).then((value) {
       if (value != null && value is String && value.isNotEmpty) {
-         context.read<PlannerBloc>().add(PlannerAddHabit(value, DateTime.now()));
+         final selectedDate = (context.read<PlannerBloc>().state is PlannerLoaded)
+             ? (context.read<PlannerBloc>().state as PlannerLoaded).selectedDate
+             : DateTime.now();
+         context.read<PlannerBloc>().add(PlannerAddHabit(value, selectedDate));
       }
     });
   }
