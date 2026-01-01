@@ -14,57 +14,67 @@ class PlantRepositoryImpl implements PlantRepository {
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) return PlantStage.seed;
 
-      // Ideally fetch from 'weekly_cycles' where user_id = userId AND date is current week.
-      // For MVP without managing cycles strictly, we could store it in profiles or a 'current_status' table.
-      // Or we just query the latest weekly_cycle.
-      
-      // Attempt to query weekly_cycles
+      // Fetch all daily habits for the user
+      // Assuming 'daily_habits' table represents the current active week's habits.
       final response = await _supabase
-          .from('weekly_cycles')
-          .select('status')
-          .eq('user_id', userId)
-          .order('start_date', ascending: false)
-          .limit(1)
-          .maybeSingle();
+          .from('daily_habits')
+          .select('day_of_week, is_completed')
+          .eq('user_id', userId);
 
-      if (response == null) return PlantStage.seed;
+      final habits = response as List<dynamic>;
+
+      // Group habits by day_of_week (1..7)
+      final Map<int, List<Map<String, dynamic>>> habitsByDay = {};
+      for (var h in habits) {
+        final day = h['day_of_week'] as int;
+        if (!habitsByDay.containsKey(day)) habitsByDay[day] = [];
+        habitsByDay[day]!.add(h as Map<String, dynamic>);
+      }
+
+      int completedDays = 0;
+      // We only count days that actually have habits scheduled.
+      // If a day has NO habits, it doesn't contribute to growth (or penalty).
+      habitsByDay.forEach((day, dayHabits) {
+        if (dayHabits.isNotEmpty) {
+          final allDone = dayHabits.every((h) => h['is_completed'] == true);
+          if (allDone) {
+            completedDays++;
+          }
+        }
+      });
+
+      // Map completed days to PlantStage (0 to 7)
+      // 0 days -> Seed
+      // 1 day  -> Germination
+      // 2 days -> Seedling
+      // 3 days -> Growth
+      // 4 days -> Bud
+      // 5 days -> Growth (Second phase)
+      // 6-7 days -> Flower
       
-      final statusStr = response['status'] as String;
-      return PlantStageExtension.fromString(statusStr);
+      if (completedDays >= 6) return PlantStage.flower;
+      switch (completedDays) {
+        case 5: return PlantStage.growth_second;
+        case 4: return PlantStage.bud;
+        case 3: return PlantStage.growth;
+        case 2: return PlantStage.seedling;
+        case 1: return PlantStage.germination;
+        case 0:
+        default:
+          return PlantStage.seed;
+      }
     } catch (e) {
+      print('Error calculating plant stage: $e');
       return PlantStage.seed;
     }
   }
 
   @override
   Future<void> updatePlantStage(PlantStage stage) async {
-    try {
-      final userId = _supabase.auth.currentUser?.id;
-      if (userId == null) return;
-
-      // Update the latest cycle's status
-      // We first find the ID of the latest cycle
-      final latestCycle = await _supabase
-          .from('weekly_cycles')
-          .select('id')
-          .eq('user_id', userId)
-          .order('start_date', ascending: false)
-          .limit(1)
-          .maybeSingle();
-
-      if (latestCycle != null) {
-        final cycleId = latestCycle['id'];
-        await _supabase.from('weekly_cycles').update({
-          'status': stage.toString().split('.').last, // Extract 'seed', 'sprout' etc.
-        }).eq('id', cycleId);
-      } else {
-        // Option: Create a new cycle if none exists? 
-        // For now, simpler to just log that we couldn't find a cycle to update.
-        print('No active cycle found to update plant stage.');
-      }
-    } catch (e) {
-      print('Error updating plant stage: $e');
-    }
+    // Stage is now calculated dynamically from habits.
+    // We do not manually update it anymore.
+    // We could log this or maybe update a cache in 'weekly_cycles' if needed.
+    print('updatePlantStage called but stage is dynamic. Ignoring.');
   }
 
   @override
