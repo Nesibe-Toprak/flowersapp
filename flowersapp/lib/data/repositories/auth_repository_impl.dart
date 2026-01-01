@@ -8,12 +8,38 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> signInWithEmail(String email, String password) async {
-    await _supabase.auth.signInWithPassword(email: email, password: password);
+    try {
+    final response = await _supabase.auth.signInWithPassword(email: email, password: password);
+    print("Giriş Başarılı: ${response.user?.email}"); // Log ekle
+  } catch (e) {
+    print("Giriş Hatası: $e"); // Hatayı gör
+    rethrow; // Hatayı UI katmanına fırlat ki ekranda uyarı gösterebilesin
+  }
   }
 
   @override
-  Future<void> signUpWithEmail(String email, String password) async {
-    await _supabase.auth.signUp(email: email, password: password);
+  Future<void> signUpWithEmail(String email, String password, String username) async {
+    await _supabase.auth.signUp(
+      email: email, 
+      password: password,
+      data: {
+        'username': username,
+      },
+    );
+  }
+
+  @override
+  Future<String?> getEmailFromUsername(String username) async {
+    try {
+      final data = await _supabase
+          .from('profiles')
+          .select('email')
+          .eq('username', username)
+          .maybeSingle();
+      return data?['email'] as String?;
+    } catch (e) {
+      return null;
+    }
   }
 
   @override
