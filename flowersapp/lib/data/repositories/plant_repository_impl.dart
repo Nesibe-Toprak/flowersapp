@@ -88,12 +88,73 @@ class PlantRepositoryImpl implements PlantRepository {
             stage = PlantStage.seed;
         }
       }
+
+      // Calculate Badge Eligibility
+      // A badge is earned if successDays > failedDays at end of week.
+      // We check if it is still POSSIBLE to achieve this.
+      int failedDays = 0;
+      for (int day = 1; day < currentWeekday; day++) {
+         if ((habitsByDay[day] ?? []).every((h) => h['is_completed'] == true) == false) {
+           failedDays++;
+         }
+      }
+      // If today is incomplete, we don't count it as failed yet for potential calculation, 
+      // but we do know we haven't succeeded yet.
+      // Actually 'isGrowthHalted' means we failed a past day or failed today?
+      // Existing logic:
+      // if (day < currentWeekday && !dayComplete) -> halted.
       
-      return PlantGrowthStatus(stage: stage, isGrowthHalted: isGrowthHalted);
+      // Let's count max potential successes.
+      // Max Success = Current Successes + Remaining Days (including today if not done yet? No, today is halted if checked and failed?)
+      // Actually, if we are 'halted', it means we failed a scan.
+      // Let's count explicitly:
+      int potentialSuccesses = 0;
+      int currentFailures = 0;
+
+      for (int day = 1; day <= 7; day++) {
+        bool dayComplete = false;
+        final dayHabits = habitsByDay[day] ?? [];
+        if (dayHabits.isNotEmpty) {
+           dayComplete = dayHabits.every((h) => h['is_completed'] == true);
+        }
+
+        if (day < currentWeekday) {
+           if (dayComplete) potentialSuccesses++; 
+           else currentFailures++;
+        } else if (day == currentWeekday) {
+           // We can still succeed today if not already successful?
+           // If we are halted, it means we failed a past day.
+           // For today, if we are halted, we can still fix today? 
+           // Usually halted refers to "growth halted due to past failure".
+           // But let's assume "remaining days" includes today.
+           potentialSuccesses++; 
+        } else {
+           // Future
+           potentialSuccesses++;
+        }
+      }
+      
+      // Badge Condition: Success > Failure
+      // So if (potentialSuccesses > currentFailures), we can still earn it?
+      // Wait, Total Days = 7.
+      // If I fail 3 days, I can get 4 successes -> Badge.
+      // If I fail 4 days, max success 3 -> No Badge.
+      // So constraint is: failures < 4.
+      bool canEarnBadge = currentFailures < 4;
+
+      return PlantGrowthStatus(
+        stage: stage, 
+        isGrowthHalted: isGrowthHalted,
+        canEarnBadge: canEarnBadge,
+      );
 
     } catch (e) {
       print('Error calculating plant stage: $e');
-      return const PlantGrowthStatus(stage: PlantStage.seed, isGrowthHalted: false);
+      return const PlantGrowthStatus(
+        stage: PlantStage.seed, 
+        isGrowthHalted: false,
+        canEarnBadge: true, // Default to true or false? True allows hope.
+      );
     }
   }
 
