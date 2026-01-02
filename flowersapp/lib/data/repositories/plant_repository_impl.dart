@@ -9,13 +9,11 @@ class PlantRepositoryImpl implements PlantRepository {
   PlantRepositoryImpl(this._supabase);
 
   @override
-  Future<PlantStage> getCurrentPlantStage() async {
+  Future<PlantGrowthStatus> getCurrentPlantStage() async {
     try {
       final userId = _supabase.auth.currentUser?.id;
-      if (userId == null) return PlantStage.seed;
+      if (userId == null) return const PlantGrowthStatus(stage: PlantStage.seed, isGrowthHalted: false);
 
-      // Fetch all daily habits for the user
-      // Assuming 'daily_habits' table represents the current active week's habits.
       final response = await _supabase
           .from('daily_habits')
           .select('day_of_week, is_completed')
@@ -23,7 +21,6 @@ class PlantRepositoryImpl implements PlantRepository {
 
       final habits = response as List<dynamic>;
 
-      // Group habits by day_of_week (1..7)
       final Map<int, List<Map<String, dynamic>>> habitsByDay = {};
       for (var h in habits) {
         final day = h['day_of_week'] as int;
@@ -32,41 +29,71 @@ class PlantRepositoryImpl implements PlantRepository {
       }
 
       int completedDays = 0;
-      // We only count days that actually have habits scheduled.
-      // If a day has NO habits, it doesn't contribute to growth (or penalty).
-      habitsByDay.forEach((day, dayHabits) {
+      bool isGrowthHalted = false;
+      final currentWeekday = DateTime.now().weekday;
+
+      // Check strictly from Day 1 upwards
+      for (int day = 1; day <= 7; day++) {
+        // If we are looking at a future day, stop checking
+        if (day > currentWeekday) break;
+
+        final dayHabits = habitsByDay[day] ?? [];
+        bool dayComplete = false;
+        
         if (dayHabits.isNotEmpty) {
-          final allDone = dayHabits.every((h) => h['is_completed'] == true);
-          if (allDone) {
+          dayComplete = dayHabits.every((h) => h['is_completed'] == true);
+        } else {
+          // If no habits for the day, consider it complete? 
+          // Or incomplete? Usually incomplete implies 'failed to do habits'.
+          // If no habits planned, maybe success?
+          // For now, let's assume 'no habits' = 'incomplete' if strict, OR 'complete' if lenient.
+          // Given "Salı günü hedeflediklerimin tümüne uymazsam", implies there ARE habits.
+          // Let's assume if no habits exist for a past day, it might be missed.
+          // BUT, to be safe, treat 'no habits' as 'nothing to do' -> incomplete for growth purposes?
+          // Let's assume dayComplete = false if empty.
+          dayComplete = false; 
+        }
+
+        if (day < currentWeekday) {
+           // Past day
+           if (!dayComplete) {
+             isGrowthHalted = true;
+             // Stop counting further growth
+             break;
+           } else {
+             completedDays++;
+           }
+        } else if (day == currentWeekday) {
+          // Today
+          if (dayComplete) {
             completedDays++;
           }
+          // If today is incomplete, it's not 'halted' yet, effectively just 'not grown yet today'.
         }
-      });
+      }
 
       // Map completed days to PlantStage (0 to 7)
-      // 0 days -> Seed
-      // 1 day  -> Germination
-      // 2 days -> Seedling
-      // 3 days -> Growth
-      // 4 days -> Bud
-      // 5 days -> Growth (Second phase)
-      // 6-7 days -> Flower
-      
-      if (completedDays >= 7) return PlantStage.flower;
-      switch (completedDays) {
-        case 6: return PlantStage.bud;
-        case 5: return PlantStage.growth_second;
-        case 4: return PlantStage.growth;
-        case 3: return PlantStage.seedling;
-        case 2: return PlantStage.germination;
-        case 1: 
-        case 0:
-        default:
-          return PlantStage.seed;
+      PlantStage stage;
+      if (completedDays >= 6) {
+        stage = PlantStage.flower;
+      } else {
+        switch (completedDays) {
+          case 5: stage = PlantStage.bud; break;
+          case 4: stage = PlantStage.growth_second; break;
+          case 3: stage = PlantStage.growth; break;
+          case 2: stage = PlantStage.seedling; break;
+          case 1: stage = PlantStage.germination; break;
+          case 0:
+          default:
+            stage = PlantStage.seed;
+        }
       }
+      
+      return PlantGrowthStatus(stage: stage, isGrowthHalted: isGrowthHalted);
+
     } catch (e) {
       print('Error calculating plant stage: $e');
-      return PlantStage.seed;
+      return const PlantGrowthStatus(stage: PlantStage.seed, isGrowthHalted: false);
     }
   }
 
