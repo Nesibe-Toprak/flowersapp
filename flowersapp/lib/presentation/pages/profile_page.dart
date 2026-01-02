@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 //import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
-import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_colors.dart';
 import '../../presentation/bloc/auth_bloc.dart';
 import '../../presentation/bloc/auth_event.dart';
 import '../../presentation/bloc/auth_state.dart';
+import '../../presentation/bloc/plant_bloc.dart';
 import 'login_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -79,19 +80,19 @@ class _ProfilePageState extends State<ProfilePage> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.backgroundBeige,
+        backgroundColor: AppColors.accentPink,
         appBar: AppBar(
           title: const Text("Profile"),
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: true,
           titleTextStyle: const TextStyle(
-            color: AppColors.darkGrey,
+            color: AppColors.primaryText,
             fontWeight: FontWeight.bold,
             fontSize: 20,
           ),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: AppColors.darkGrey),
+            icon: const Icon(Icons.arrow_back_ios, color: AppColors.primaryText),
             onPressed: () => Navigator.pop(context),
           ),
         ),
@@ -129,7 +130,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   Text(
                     _name,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          color: AppColors.darkGrey,
+                          color: AppColors.primaryText,
                           fontWeight: FontWeight.bold,
                         ),
                   ),
@@ -139,7 +140,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 Text(
                   '@$_username',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppColors.darkGrey,
+                        color: AppColors.primaryText,
                         fontWeight: FontWeight.w500,
                       ),
                 ),
@@ -148,7 +149,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 Text(
                   _email,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.darkGrey.withOpacity(0.6),
+                        color: AppColors.primaryText.withOpacity(0.6),
                       ),
                 ),
                 const SizedBox(height: 48),
@@ -157,10 +158,11 @@ class _ProfilePageState extends State<ProfilePage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
+                      context.read<PlantBloc>().add(ClearPlantData());
                       context.read<AuthBloc>().add(AuthSignOutRequested());
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
+                      backgroundColor: AppColors.creamPeach,
                       foregroundColor: Colors.redAccent,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       side: const BorderSide(color: Colors.redAccent),

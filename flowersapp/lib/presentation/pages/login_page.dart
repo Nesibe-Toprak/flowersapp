@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_colors.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -22,6 +22,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.accentPink,
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
@@ -54,21 +55,20 @@ class _LoginPageState extends State<LoginPage> {
                   flex: 4,
                   child: Container(
                     width: double.infinity,
-                    color: AppColors.backgroundBeige,
+                    color: AppColors.accentPink,
                     child: Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.eco, // Placeholder for Seed Logo
-                            size: 100,
-                            color: AppColors.sageGreen,
+                          const Text(
+                            '🌸',
+                            style: TextStyle(fontSize: 100),
                           ),
                           const SizedBox(height: 20),
                           Text(
-                            'EcoPlan',
+                            'FLOWERS',
                             style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                  color: AppColors.darkGrey,
+                                  color: AppColors.primaryText,
                                   fontWeight: FontWeight.bold,
                                 ),
                           ),
@@ -162,8 +162,8 @@ class _LoginPageState extends State<LoginPage> {
                                 }
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.accentPink,
-                                foregroundColor: AppColors.darkGrey,
+                                backgroundColor: AppColors.creamPeach,
+                                foregroundColor: AppColors.primaryText,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -174,7 +174,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ? const SizedBox(
                                     width: 24, 
                                     height: 24, 
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.darkGrey),
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primaryText),
                                   )
                                 : Text(
                                   _isLoginMode ? 'Giriş Yap' : 'Kayıt Ol',
@@ -192,9 +192,15 @@ class _LoginPageState extends State<LoginPage> {
                                 _isLoginMode = !_isLoginMode;
                               });
                             },
-                            child: Text(_isLoginMode
-                                ? 'Hesabınız yok mu? Kayıt Olun'
-                                : 'Zaten hesabınız var mı? Giriş Yapın'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppColors.primaryText,
+                            ),
+                            child: Text(
+                              _isLoginMode
+                                  ? 'Hesabınız yok mu? Kayıt Olun'
+                                  : 'Zaten hesabınız var mı? Giriş Yapın',
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ],
                       ),
@@ -231,11 +237,11 @@ class _LoginPageState extends State<LoginPage> {
       child: TextField(
         controller: controller,
         obscureText: obscureText,
-        style: const TextStyle(color: AppColors.darkGrey),
+        style: const TextStyle(color: AppColors.primaryText),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: TextStyle(color: AppColors.darkGrey.withOpacity(0.5)),
-          prefixIcon: Icon(icon, color: AppColors.darkGrey),
+          hintStyle: TextStyle(color: AppColors.primaryText.withOpacity(0.5)),
+          prefixIcon: Icon(icon, color: AppColors.primaryText),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,

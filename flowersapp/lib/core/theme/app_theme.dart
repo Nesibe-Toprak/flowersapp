@@ -6,20 +6,31 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       primaryColor: AppColors.accentPink,
-      scaffoldBackgroundColor: AppColors.backgroundBeige,
+      scaffoldBackgroundColor: AppColors.accentPink,
       colorScheme: const ColorScheme.light(
         primary: AppColors.accentPink,
         secondary: AppColors.sageGreen,
-        background: AppColors.backgroundBeige,
+        background: AppColors.accentPink,
         surface: AppColors.creamPeach,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
-        onBackground: AppColors.darkGrey,
-        onSurface: AppColors.darkGrey,
+        onBackground: AppColors.primaryText,
+        onSurface: AppColors.primaryText,
       ),
       textTheme: GoogleFonts.nunitoTextTheme().apply(
-        bodyColor: AppColors.darkGrey,
-        displayColor: AppColors.darkGrey,
+        bodyColor: AppColors.primaryText,
+        displayColor: AppColors.primaryText,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.creamPeach,
+          foregroundColor: AppColors.primaryText,
+          elevation: 0,
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: AppColors.creamPeach,
+        foregroundColor: AppColors.primaryText,
       ),
       useMaterial3: true,
     );
