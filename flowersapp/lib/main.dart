@@ -45,7 +45,7 @@ class EcoPlanApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'EcoPlan',
+        title: 'FLOWERS',
         theme: AppTheme.lightTheme,
         debugShowCheckedModeBanner: false,
         home: const AuthWrapper(),
