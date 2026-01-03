@@ -29,7 +29,7 @@ class _SuccessGardenPageState extends State<SuccessGardenPage> {
     return Scaffold(
       backgroundColor: AppColors.accentPink,
       appBar: AppBar(
-        title: Text(widget.mode == GardenViewMode.flowers ? "Başarı Bahçem 🏆" : "Başarı Rozetlerim 🏆"),
+        title: Text(widget.mode == GardenViewMode.flowers ? "Başarı Bahçem 🏆" : "Rozetlerim 🥇"),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -169,7 +169,7 @@ class _SuccessGardenPageState extends State<SuccessGardenPage> {
                                     assetPath: assetPath, 
                                     cycleId: cycle.id,
                                     initialNote: cycle.note,
-                                    emoji: '🥇', // Added emoji
+                                    emoji: '🥇', 
                                   );
                                 },
                                 childCount: badgeCycles.length,

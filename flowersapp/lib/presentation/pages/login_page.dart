@@ -4,6 +4,7 @@ import '../../core/theme/app_colors.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
+import 'dashboard_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -29,6 +30,10 @@ class _LoginPageState extends State<LoginPage> {
             // Navigate to Dashboard (Placeholder for now)
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Giriş Başarılı!')),
+            );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const DashboardPage()),
             );
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(

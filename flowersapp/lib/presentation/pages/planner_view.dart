@@ -99,25 +99,15 @@ class PlannerView extends StatelessWidget {
                 if (state is PlannerLoaded) {
                   // Check if it's Sunday (Day 7)
                   if (state.selectedDate.weekday == 7) {
-                    // Trigger Week Completion Logic
-                    // We don't show snackbar here; let PlantBloc handle the result.
                     context.read<PlantBloc>().add(CompleteWeek());
                   } else {
                     // Normal day transition
-                    final plantState = context.read<PlantBloc>().state;
-                    bool isGrowthHalted = false;
-                    if (plantState is PlantLoaded) {
-                      isGrowthHalted = plantState.isGrowthHalted;
-                    }
-
-                    if (!isGrowthHalted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Tüm hedefler tamamlandı! Bitki büyüyor... 🌱'),
-                          duration: Duration(seconds: 1),
-                        ),
-                      );
-                    }
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Tüm hedefler tamamlandı! Bitki büyüyor... 🌱'),
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
                     
                     // Trigger Plant Stage update to reflect growth
                     context.read<PlantBloc>().add(LoadPlantStage());

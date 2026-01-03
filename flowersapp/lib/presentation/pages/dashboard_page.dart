@@ -16,7 +16,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
   final List<Widget> _pages = [
     const PlannerView(),
-    const SuccessGardenPage(),
+    const SuccessGardenPage(mode: GardenViewMode.flowers),
+    const SuccessGardenPage(mode: GardenViewMode.badges),
   ];
 
   @override
@@ -52,12 +53,16 @@ class _DashboardPageState extends State<DashboardPage> {
           },
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.local_florist),
+              icon: Icon(Icons.home),
               label: 'Ana Sayfa',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.emoji_events),
-              label: 'Bahçem',
+              icon: Text('🌸', style: TextStyle(fontSize: 24)),
+              label: 'Başarı Bahçem',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.verified), // Or emoji_events
+              label: 'Başarı Rozetlerim',
             ),
           ],
         ),
