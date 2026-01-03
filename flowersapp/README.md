@@ -6,6 +6,7 @@ Bu proje, kullanıcıların günlük hedeflerini takip etmelerini ve hedeflerine
 
 *   **📝 Hedef Takibi:** Günlük hedeflerinizi belirleyin ve ilerlemenizi kaydedin.
 *   **🌱🌸 Sanal Bahçe:** Hedeflerinizi tamamladıkça bitkinizi büyütün. Başarılı haftaların sonunda tamamen büyüyen çiçeğinizi "Başarı Bahçesi"ne ekleyin.
+*   **Bağış Sayfası:** Başarılı haftaların sonunda büyüyen çiçeğinizin ardından sizi TEMA vakfının bağış sayfasına yönlendirecek bir bağlantı çıkar.
 *   **🥇 Rozet Sistemi:** Hedeflerinizi tamamlamadığınız günden sonraki günlerde düzenli ve azimli çalışmalarınız karşılığında başarı rozetlerini kazanın.
 *   **🔐 Kullanıcı Yönetimi:** Supabase destekli güvenli giriş ve kayıt işlemleri.
 
