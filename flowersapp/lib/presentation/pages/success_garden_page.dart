@@ -45,12 +45,12 @@ class _SuccessGardenPageState extends State<SuccessGardenPage> {
             return const Center(child: CircularProgressIndicator());
           } 
           else if (state is PlantHistoryLoaded) {
-            // Filter flowers: Show everything EXCEPT perseverance badge
+            
             final displayedFlowers = state.history
                 .where((cycle) => cycle.status != PlantStage.perseverance_badge)
                 .toList();
 
-            // Filter badges: Show ONLY Perseverance Badge (Flowers are in Garden tab)
+            
             final badgeCycles = state.history
                 .where((cycle) =>
                     cycle.status == PlantStage.perseverance_badge)
@@ -61,8 +61,6 @@ class _SuccessGardenPageState extends State<SuccessGardenPage> {
               child: CustomScrollView(
                 slivers: [
                   if (widget.mode == GardenViewMode.flowers) ...[
-                      // --- Çiçekler Başlığı ---
-                      // ... (unchanged)
                       SliverToBoxAdapter(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -81,7 +79,6 @@ class _SuccessGardenPageState extends State<SuccessGardenPage> {
                         ),
                       ),
                       
-                      // --- Çiçekler Izgarası (Grid) ---
                       displayedFlowers.isEmpty
                           ? SliverToBoxAdapter(
                               child: Container(
@@ -111,7 +108,6 @@ class _SuccessGardenPageState extends State<SuccessGardenPage> {
                   ],
 
                   if (widget.mode == GardenViewMode.badges) ...[
-                      // --- Rozetler Başlığı ---
                        SliverToBoxAdapter(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -129,7 +125,6 @@ class _SuccessGardenPageState extends State<SuccessGardenPage> {
                         ),
                       ),
 
-                      // --- Rozetler Izgarası (Grid) ---
                       badgeCycles.isEmpty
                           ? SliverToBoxAdapter(
                               child: Container(
@@ -177,7 +172,6 @@ class _SuccessGardenPageState extends State<SuccessGardenPage> {
                             ),
                   ],
                   
-                  // Alt boşluk
                   const SliverToBoxAdapter(child: SizedBox(height: 50)),
                 ],
               ),

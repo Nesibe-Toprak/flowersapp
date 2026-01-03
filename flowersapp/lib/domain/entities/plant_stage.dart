@@ -23,7 +23,6 @@ extension PlantStageExtension on PlantStage {
     }
   }
 
-  // Helper to map from string (DB)
   static PlantStage fromString(String val) {
     return PlantStage.values.firstWhere(
       (e) => e.toString().split('.').last == val,

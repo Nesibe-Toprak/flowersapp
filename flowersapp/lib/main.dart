@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-//import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
@@ -12,7 +11,7 @@ import 'presentation/pages/login_page.dart';
 import 'presentation/pages/dashboard_page.dart';
 import 'presentation/bloc/planner_bloc.dart';
 import 'presentation/bloc/planner_event.dart';
-import 'presentation/bloc/plant_bloc.dart'; // Contains State/Event/Bloc
+import 'presentation/bloc/plant_bloc.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

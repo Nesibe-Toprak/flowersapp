@@ -9,7 +9,7 @@ class BreathingWidget extends StatefulWidget {
     super.key,
     required this.child,
     this.duration = const Duration(milliseconds: 2000),
-    this.scaleFactor = 0.05, // Scales between 1.0 and 1.05
+    this.scaleFactor = 0.05, 
   });
 
   @override

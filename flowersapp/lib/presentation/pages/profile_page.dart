@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-//import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import '../../core/theme/app_colors.dart';
 import '../../presentation/bloc/auth_bloc.dart';
@@ -33,7 +32,6 @@ class _ProfilePageState extends State<ProfilePage> {
     if (user != null) {
       _email = user.email ?? 'No Email';
       
-      // Try fetching from database first as it is more reliable
       try {
         final data = await Supabase.instance.client
             .from('profiles')
@@ -50,11 +48,9 @@ class _ProfilePageState extends State<ProfilePage> {
            return;
         }
       } catch (e) {
-        // Fallback to metadata if DB fetch fails
         debugPrint('Profile fetch error: $e');
       }
 
-      // Fallback
       if (mounted) {
         setState(() {
           _username = user.userMetadata?['username'] as String? ?? 'Misafir';
@@ -67,7 +63,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Local vars replaced by state vars: _username, _name, _email
 
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
@@ -102,7 +97,7 @@ class _ProfilePageState extends State<ProfilePage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 24),
-                // Avatar Placeholder
+               
                 Container(
                   width: 100,
                   height: 100,
@@ -124,7 +119,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Real Name
+
                 if (_name.isNotEmpty) ...[
                   Text(
                     _name,
@@ -135,7 +130,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   const SizedBox(height: 4),
                 ],
-                // Username
+               
                 Text(
                   '@$_username',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -144,7 +139,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                 ),
                 const SizedBox(height: 8),
-                // Email
+               
                 Text(
                   _email,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -152,7 +147,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                 ),
                 const SizedBox(height: 48),
-                // Logout Button
+               
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(

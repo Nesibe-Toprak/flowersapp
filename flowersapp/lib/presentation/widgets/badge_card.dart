@@ -32,7 +32,6 @@ class BadgeCard extends StatefulWidget {
 }
 
 class _BadgeCardState extends State<BadgeCard> {
-  // ... (Controller logic remains same)
   late TextEditingController _noteController; 
 
   @override
@@ -55,7 +54,6 @@ class _BadgeCardState extends State<BadgeCard> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          // ... (style remains same)
           boxShadow: [
              BoxShadow(
               color: Colors.grey.withOpacity(0.1),
@@ -105,7 +103,7 @@ class _BadgeCardState extends State<BadgeCard> {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            // Date removed as requested
+            
             if (widget.initialNote != null && widget.initialNote!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),

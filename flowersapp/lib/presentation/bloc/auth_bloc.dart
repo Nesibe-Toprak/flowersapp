@@ -1,7 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/repositories/auth_repository.dart';
-//import 'package:supabase_flutter/supabase_flutter.dart';
-// "hide AuthState" ekleyerek çakışmayı önlüyoruz
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -49,7 +47,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
          emit(AuthError("E-posta veya kullanıcı adı gerekli."));
          emit(AuthUnauthenticated());
       }
-      // The stream subscription in _onCheckStatus will handle the state update
     } on AuthException catch (e) {
       emit(AuthError(_mapAuthErrorMessage(e.message)));
       emit(AuthUnauthenticated());
@@ -64,7 +61,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       await _authRepository.signUpWithEmail(event.email, event.password, event.username);
       emit(AuthSignUpSuccess());
-      emit(AuthUnauthenticated()); // Reset to unauthenticated so user can login or retry
+      emit(AuthUnauthenticated()); 
     } on AuthException catch (e) {
       emit(AuthError(_mapAuthErrorMessage(e.message)));
       emit(AuthUnauthenticated());

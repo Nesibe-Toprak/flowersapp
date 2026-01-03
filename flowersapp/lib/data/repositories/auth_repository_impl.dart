@@ -10,10 +10,10 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> signInWithEmail(String email, String password) async {
     try {
     final response = await _supabase.auth.signInWithPassword(email: email, password: password);
-    print("Giriş Başarılı: ${response.user?.email}"); // Log ekle
+    print("Giriş Başarılı: ${response.user?.email}");
   } catch (e) {
-    print("Giriş Hatası: $e"); // Hatayı gör
-    rethrow; // Hatayı UI katmanına fırlat ki ekranda uyarı gösterebilesin
+    print("Giriş Hatası: $e");
+    rethrow; 
   }
   }
 

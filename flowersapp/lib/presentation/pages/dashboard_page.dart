@@ -61,7 +61,7 @@ class _DashboardPageState extends State<DashboardPage> {
               label: 'Başarı Bahçem',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.verified), // Or emoji_events
+              icon: Icon(Icons.verified), 
               label: 'Başarı Rozetlerim',
             ),
           ],

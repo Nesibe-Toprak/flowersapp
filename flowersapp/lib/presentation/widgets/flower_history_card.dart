@@ -49,15 +49,13 @@ class _FlowerHistoryCardState extends State<FlowerHistoryCard> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Resim optimizasyonu eklendi
-            // Resim optimizasyonu eklendi
             widget.cycle.status == PlantStage.flower 
             ? const Text('🌸', style: TextStyle(fontSize: 50))
             : Image.asset(
                 _getAssetForStage(widget.cycle.status),
                 width: 50,
                 height: 50,
-                cacheWidth: 150, // BU SATIR DONMAYI ENGELLER
+                cacheWidth: 150, 
                 errorBuilder: (context, error, stackTrace) {
                   return const Icon(Icons.error, color: Colors.grey);
                 },
@@ -117,7 +115,6 @@ class _FlowerHistoryCardState extends State<FlowerHistoryCard> {
   }
 
   String _getAssetForStage(PlantStage stage) {
-    // Flower stage is handled by Emoji in build method
-    return 'assets/images/plant_stage_1.png'; // Fallback
+    return 'assets/images/plant_stage_1.png'; 
   }
 }

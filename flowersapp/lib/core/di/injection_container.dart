@@ -16,19 +16,16 @@ import '../../presentation/bloc/plant_bloc.dart';
 final sl = GetIt.instance;
 
 Future<void> init() async {
-  // External
+  
   final supabase = Supabase.instance.client;
   sl.registerLazySingleton(() => supabase);
 
-  // Auth
   sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl()));
   sl.registerFactory(() => AuthBloc(sl()));
 
-  // Planner
   sl.registerLazySingleton<PlannerRepository>(() => PlannerRepositoryImpl(sl()));
   sl.registerFactory(() => PlannerBloc(sl()));
 
-  // Plant
   sl.registerLazySingleton<PlantRepository>(() => PlantRepositoryImpl(sl()));
   sl.registerFactory(() => PlantBloc(sl()));
 }

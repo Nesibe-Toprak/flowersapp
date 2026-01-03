@@ -15,8 +15,6 @@ class PlannerRepositoryImpl implements PlannerRepository {
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) throw Exception('User not logged in');
 
-      // Note: In a full implementation, we should filter by the correct weekly_cycle_id too.
-      // For now, we fetch all habits for this day of week.
       final dayOfWeek = date.weekday; 
 
       final response = await _supabase
@@ -27,7 +25,6 @@ class PlannerRepositoryImpl implements PlannerRepository {
       final data = response as List<dynamic>;
       return data.map((json) => HabitModel.fromJson(json)).toList();
     } catch (e) {
-      // Log error (in a real app, use a logger)
       print('Error fetching habits: $e');
       return []; 
     }
@@ -39,17 +36,12 @@ class PlannerRepositoryImpl implements PlannerRepository {
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) throw Exception('User not logged in');
       
-      // For MVP: We are inserting without a cycle_id if it's nullable, 
-      // or assuming the backend triggers might handle it.
-      // If cycle_id is required, this needs to fetch/create a cycle first.
-      
       await _supabase.from('daily_habits').insert({
         'id': const Uuid().v4(),
         'user_id': userId,
         'title': title,
         'day_of_week': date.weekday,
         'is_completed': false,
-        // 'cycle_id': ... // TODO: Implement cycle management
       });
     } catch (e) {
        print('Error adding habit: $e');

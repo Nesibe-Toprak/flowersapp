@@ -3,5 +3,5 @@ abstract class AuthRepository {
   Future<void> signUpWithEmail(String email, String password, String username);
   Future<String?> getEmailFromUsername(String username);
   Future<void> signOut();
-  Stream<String?> get onAuthStateChanged; // Returns userId or null
+  Stream<String?> get onAuthStateChanged;
 }

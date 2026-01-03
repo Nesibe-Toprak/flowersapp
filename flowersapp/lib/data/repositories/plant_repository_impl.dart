@@ -32,9 +32,7 @@ class PlantRepositoryImpl implements PlantRepository {
       bool isGrowthHalted = false;
       final currentWeekday = DateTime.now().weekday;
 
-      // Check strictly from Day 1 upwards
       for (int day = 1; day <= 7; day++) {
-        // If we are looking at a future day, stop checking
         if (day > currentWeekday) break;
 
         final dayHabits = habitsByDay[day] ?? [];
@@ -43,35 +41,27 @@ class PlantRepositoryImpl implements PlantRepository {
         if (dayHabits.isNotEmpty) {
           dayComplete = dayHabits.every((h) => h['is_completed'] == true);
         } else {
-          // If no habits for the day, consider it complete (rest day logic)
           dayComplete = true; 
         }
 
         print('Checking Day $day. CurrentWeekday: $currentWeekday. DayComplete: $dayComplete');
         
         if (day < currentWeekday) {
-           // Past day
            if (!dayComplete) {
              isGrowthHalted = true;
-             // Stop counting further growth
              break;
            } else {
-             // Only increment growth if explicitly contributing (habits exist)
              if (dayHabits.isNotEmpty) {
                completedDays++;
              }
            }
         } else if (day == currentWeekday) {
-           // Today
-           // Only increment if habits exist and are complete
            if (dayHabits.isNotEmpty && dayComplete) {
              completedDays++;
            }
         }
       }
 
-      // Map completed days to PlantStage (0 to 6)
-      // Strict mapping: Mon(0)->Seed ... Sun(6)->Flower
       PlantStage stage;
       if (completedDays >= 6) {
         stage = PlantStage.flower;
@@ -98,9 +88,6 @@ class PlantRepositoryImpl implements PlantRepository {
 
   @override
   Future<void> updatePlantStage(PlantStage stage) async {
-    // Stage is now calculated dynamically from habits.
-    // We do not manually update it anymore.
-    // We could log this or maybe update a cache in 'weekly_cycles' if needed.
     print('updatePlantStage called but stage is dynamic. Ignoring.');
   }
 
@@ -124,7 +111,7 @@ class PlantRepositoryImpl implements PlantRepository {
           startDate: DateTime.parse(json['start_date'] as String),
           endDate: json['end_date'] != null ? DateTime.parse(json['end_date'] as String) : null,
           status: PlantStageExtension.fromString(json['status'] as String),
-          note: json['note'] as String?, // Assuming 'note' column exists or ignore
+          note: json['note'] as String?,
         );
       }).toList();
     } catch (e) {
@@ -138,7 +125,6 @@ class PlantRepositoryImpl implements PlantRepository {
       final userId = _supabase.auth.currentUser?.id;
       if (userId == null) return;
 
-      // 1. Calculate final status based on history
       final habitsResponse = await _supabase
           .from('daily_habits')
           .select('day_of_week, is_completed')
@@ -174,13 +160,10 @@ class PlantRepositoryImpl implements PlantRepository {
       } else if (successDays > failedDays) {
         finalStatusStr = 'perseverance_badge';
       } else {
-        // Fallback to calculated stage or just seed
          finalStatusStr = finalStage.toString().split('.').last;
-         if (finalStatusStr == 'flower') finalStatusStr = 'perseverance_badge'; // Handle edge case where input was flower but days < 7 (unlikely)
+         if (finalStatusStr == 'flower') finalStatusStr = 'perseverance_badge';
       }
       
-      // If original logic said flower (7 days) but we found otherwise, trust calculation.
-      // Actually simpler:
       if (successDays == 7) {
         finalStatusStr = 'flower';
       } else if (successDays > failedDays) {
@@ -197,10 +180,8 @@ class PlantRepositoryImpl implements PlantRepository {
         'start_date': startDate.toIso8601String(),
         'end_date': now.toIso8601String(),
         'status': finalStatusStr,
-        // 'note': 'Weekly Goal Reached!' 
       });
 
-      // 2. Clear daily habits for a fresh start
       await _supabase
           .from('daily_habits')
           .delete()

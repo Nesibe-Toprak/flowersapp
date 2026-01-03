@@ -27,7 +27,6 @@ class _LoginPageState extends State<LoginPage> {
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
-            // Navigate to Dashboard (Placeholder for now)
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Giriş Başarılı!')),
             );
@@ -43,10 +42,6 @@ class _LoginPageState extends State<LoginPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Kayıt Başarılı! Lütfen giriş yapın.')),
             );
-            // Optional: Switch to login mode automatically
-            // setState(() { _isLoginMode = true; }); // Cannot call setState inside clean stateless logic easily without context access or changing current widget state.
-            // Since we are in a listener of a StatefulWidget, we CAN call setState if we want, or just let user do it.
-            // Let's just show message for now as we are inside the listener callback of _LoginPageState.
           }
         },
         builder: (context, state) {
@@ -55,7 +50,6 @@ class _LoginPageState extends State<LoginPage> {
             height: MediaQuery.of(context).size.height,
             child: Column(
               children: [
-                // Top Section - Logo (40% height)
                 Expanded(
                   flex: 4,
                   child: Container(
@@ -82,7 +76,6 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
-                // Bottom Section - Form (60% height)
                 Expanded(
                   flex: 6,
                   child: Padding(

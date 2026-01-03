@@ -27,7 +27,6 @@ class PlannerView extends StatelessWidget {
           fontSize: 20,
         ),
         actions: [
-          // Success Garden button removed (moved to bottom nav)
           IconButton(
             icon: const Icon(Icons.person, color: AppColors.primaryText),
             tooltip: 'Profile',
@@ -43,7 +42,6 @@ class PlannerView extends StatelessWidget {
       body: SafeArea(
         child: MultiBlocListener(
           listeners: [
-            // Listener for Plant Events (e.g. Week Completion)
             BlocListener<PlantBloc, PlantState>(
               listener: (context, state) {
                   if (state is PlantWeekArchived) {
@@ -56,7 +54,6 @@ class PlannerView extends StatelessWidget {
                          ),
                        );
 
-                        // Show Donation Dialog after a brief delay ONLY for Flower
                         Future.delayed(const Duration(milliseconds: 500), () {
                            if (context.mounted) {
                                showDialog(
@@ -81,7 +78,7 @@ class PlannerView extends StatelessWidget {
                   }
               },
             ),
-            // Listener for Planner Events (Daily Progress)
+    
             BlocListener<PlannerBloc, PlannerState>(
               listenWhen: (previous, current) {
                 if (previous is PlannerLoaded && current is PlannerLoaded) {
@@ -97,11 +94,9 @@ class PlannerView extends StatelessWidget {
               },
               listener: (context, state) {
                 if (state is PlannerLoaded) {
-                  // Check if it's Sunday (Day 7)
                   if (state.selectedDate.weekday == 7) {
                     context.read<PlantBloc>().add(CompleteWeek());
                   } else {
-                    // Normal day transition
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Tüm hedefler tamamlandı! Bitki büyüyor... 🌱'),
@@ -109,7 +104,6 @@ class PlannerView extends StatelessWidget {
                       ),
                     );
                     
-                    // Trigger Plant Stage update to reflect growth
                     context.read<PlantBloc>().add(LoadPlantStage());
 
                     Future.delayed(const Duration(milliseconds: 1500), () {
@@ -134,7 +128,6 @@ class PlannerView extends StatelessWidget {
             builder: (context, plannerState) {
               return Column(
                 children: [
-                  // 1. Plant Area (40%)
                   Expanded(
                     flex: 40,
                     child: Container(
@@ -146,14 +139,6 @@ class PlannerView extends StatelessWidget {
                            if (plantState is PlantLoaded) {
                              stageName = plantState.stage.name;
                            } else if (plantState is PlantWeekArchived) {
-                             // Keep showing flower momentarily or reset?
-                             // state has archivedStage, but usually we fallback to Loading/Seed quickly.
-                             // But since we just emitted it, let's show Seed or Completed?
-                             // Actually CompleteWeek emits PlantWeekArchived THEN Seed immediately?
-                             // No, CompleteWeek in bloc has:
-                             // emit(PlantWeekArchived)
-                             // emit(PlantLoaded(Seed))
-                             // So this builder will see Seed very quickly.
                              stageName = 'Tohum';
                            }
   
@@ -165,12 +150,10 @@ class PlannerView extends StatelessWidget {
                                 const SizedBox(height: 16),
                                 Builder(
                                   builder: (context) {
-                                    // 1. Determine Day Name
                                     final weekday = (plannerState is PlannerLoaded) ? plannerState.selectedDate.weekday : DateTime.now().weekday;
                                     const dayNames = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
                                     final dayName = dayNames[weekday - 1];
 
-                                    // 2. Use Actual Stage Name from State
                                     String stageName = 'Tohum';
                                     if (plantState is PlantLoaded) {
                                       stageName = plantState.stage.name;
@@ -199,7 +182,7 @@ class PlannerView extends StatelessWidget {
                                         "Bitkiniz bu hafta büyüyemeyecek ancak hedeflerinize uymaya devam ederseniz rozet kazanabilirsiniz.",
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
-                                          color: Colors.red, // Or AppColors.error if exists, or dark red
+                                          color: Colors.red, 
                                           fontSize: 12,
                                           fontWeight: FontWeight.w500,
                                         ),
@@ -213,7 +196,7 @@ class PlannerView extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // 2. Weekly Calendar (15%)
+                  
                    Expanded(
                     flex: 15,
                     child: Container(
@@ -222,7 +205,6 @@ class PlannerView extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: List.generate(7, (index) {
                           final now = DateTime.now();
-                          // Calculate Monday of the current week
                           final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
                           final date = startOfWeek.add(Duration(days: index));
                           
@@ -235,8 +217,7 @@ class PlannerView extends StatelessWidget {
                       ),
                     ),
                   ),
-  
-                  // 3. Habits / Planner Area (45%)
+
                   Expanded(
                     flex: 45,
                     child: Container(
@@ -309,15 +290,15 @@ class PlannerView extends StatelessWidget {
         context.read<PlannerBloc>().add(PlannerLoadHabits(date));
       },
       child: Container(
-        width: 44, // Slightly wider to fit day number
-        height: 60, // Taller for two lines of text
+        width: 44, 
+        height: 60, 
         decoration: BoxDecoration(
           color: AppColors.creamPeach,
           border: Border.all(
             color: isSelected ? AppColors.accentPink : AppColors.primaryText.withOpacity(0.5),
             width: isSelected ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(12), // Softer corners
+          borderRadius: BorderRadius.circular(12),
           boxShadow: isSelected
               ? [
                   BoxShadow(
@@ -375,7 +356,6 @@ class PlannerView extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Custom Checkbox
           GestureDetector(
             onTap: () {
               context.read<PlannerBloc>().add(
@@ -483,7 +463,6 @@ class PlannerView extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               if (controller.text.isNotEmpty) {
-                 // We need to access the bloc from the PARENT context or provided context
               }
               Navigator.pop(context, controller.text);
             },

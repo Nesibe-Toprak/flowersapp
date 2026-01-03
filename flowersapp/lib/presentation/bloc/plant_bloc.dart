@@ -3,7 +3,7 @@ import '../../domain/entities/plant_stage.dart';
 import '../../domain/entities/weekly_cycle.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/repositories/plant_repository.dart';
-// Event
+
 abstract class PlantEvent extends Equatable {
   const PlantEvent();
   @override
@@ -22,7 +22,7 @@ class UpdatePlantStage extends PlantEvent {
 }
 
 class UpdatePlantProgress extends PlantEvent {
-  final int currentDayIndex; // 0: Ptesi ... 6: Pazar
+  final int currentDayIndex;
   final bool allTasksCompleted;
 
   const UpdatePlantProgress({
@@ -46,7 +46,7 @@ class UpdateCycleNote extends PlantEvent {
 
 class ClearPlantData extends PlantEvent {}
 
-// State
+
 abstract class PlantState extends Equatable {
   const PlantState();
   @override
@@ -82,10 +82,6 @@ class PlantHistoryLoaded extends PlantState {
   @override
   List<Object> get props => [history];
 }
-
-// Bloc
-//import 'package:flutter_bloc/flutter_bloc.dart';
-//import '../../domain/repositories/plant_repository.dart';
 
 class PlantBloc extends Bloc<PlantEvent, PlantState> {
   final PlantRepository _repository;
@@ -129,20 +125,17 @@ class PlantBloc extends Bloc<PlantEvent, PlantState> {
     });
 
     on<UpdatePlantStage>((event, emit) async {
-       // Optimistically update UI - assuming no halt for manual updates (though manual updates are deprecated)
        emit(PlantLoaded(event.newStage)); 
        try {
          await _repository.updatePlantStage(event.newStage);
-         // Optionally reload to confirm
-         add(LoadPlantStage()); // Reload to get correct halted status
+         add(LoadPlantStage()); 
        } catch (e) {
          emit(PlantError("Failed to update plant: $e"));
-         // Rollback could be handled here if needed
        }
     });
 
     on<LoadPlantHistory>((event, emit) async {
-      emit(PlantLoading()); // Or a specific history loading state if needed
+      emit(PlantLoading());
       try {
         final history = await _repository.getPlantHistory();
         emit(PlantHistoryLoaded(history));
@@ -154,19 +147,14 @@ class PlantBloc extends Bloc<PlantEvent, PlantState> {
     on<CompleteWeek>((event, emit) async {
       emit(PlantLoading());
       try {
-         // Determine the actual stage before archiving
          final currentStatus = await _repository.getCurrentPlantStage();
          
-         // Archive current week with its actual result
          await _repository.archiveAndResetWeek(currentStatus.stage);
 
-         // Notify UI about the archived stage
          emit(PlantWeekArchived(currentStatus.stage));
          
-         // Emit Seed stage for new week
          emit(const PlantLoaded(PlantStage.seed));
          
-         // Trigger history reload immediately so Success Garden is up to date
          add(LoadPlantHistory());
       } catch (e) {
         emit(PlantError("Failed to reset week: $e"));
