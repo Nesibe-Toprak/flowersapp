@@ -21,6 +21,31 @@ class UpdatePlantStage extends PlantEvent {
   List<Object> get props => [newStage];
 }
 
+class UpdatePlantProgress extends PlantEvent {
+  final int currentDayIndex; // 0: Ptesi ... 6: Pazar
+  final bool allTasksCompleted;
+
+  const UpdatePlantProgress({
+    required this.currentDayIndex,
+    required this.allTasksCompleted,
+  });
+
+  @override
+  List<Object> get props => [currentDayIndex, allTasksCompleted];
+}
+
+class CompleteWeek extends PlantEvent {}
+
+class UpdateCycleNote extends PlantEvent {
+  final String cycleId;
+  final String note;
+  const UpdateCycleNote(this.cycleId, this.note);
+  @override
+  List<Object> get props => [cycleId, note];
+}
+
+class ClearPlantData extends PlantEvent {}
+
 // State
 abstract class PlantState extends Equatable {
   const PlantState();
@@ -32,15 +57,23 @@ class PlantInitial extends PlantState {}
 class PlantLoading extends PlantState {}
 class PlantLoaded extends PlantState {
   final PlantStage stage;
-  const PlantLoaded(this.stage);
+  final bool isGrowthHalted;
+  const PlantLoaded(this.stage, {this.isGrowthHalted = false});
   @override
-  List<Object> get props => [stage];
+  List<Object> get props => [stage, isGrowthHalted];
 }
 class PlantError extends PlantState {
   final String message;
   const PlantError(this.message);
   @override
   List<Object> get props => [message];
+}
+
+class PlantWeekArchived extends PlantState {
+  final PlantStage archivedStage;
+  const PlantWeekArchived(this.archivedStage);
+  @override
+  List<Object> get props => [archivedStage];
 }
 
 class PlantHistoryLoaded extends PlantState {
@@ -61,19 +94,47 @@ class PlantBloc extends Bloc<PlantEvent, PlantState> {
     on<LoadPlantStage>((event, emit) async {
       emit(PlantLoading());
       try {
-        final stage = await _repository.getCurrentPlantStage();
-        emit(PlantLoaded(stage));
+        final result = await _repository.getCurrentPlantStage();
+        emit(PlantLoaded(result.stage, isGrowthHalted: result.isGrowthHalted));
       } catch (e) {
         emit(PlantError(e.toString()));
       }
     });
     
+    on<UpdatePlantProgress>((event, emit) async {
+      if (!event.allTasksCompleted) return;
+
+      if (state is PlantLoaded) {
+        final currentLoadedState = state as PlantLoaded;
+        if (currentLoadedState.isGrowthHalted) return;
+      }
+
+      PlantStage newStage;
+      if (event.currentDayIndex >= 0 && event.currentDayIndex < PlantStage.values.length) {
+        newStage = PlantStage.values[event.currentDayIndex];
+      } else {
+        return;
+      }
+
+      try {
+       
+        await _repository.updatePlantStage(newStage);
+        emit(PlantLoaded(newStage));
+        if (event.currentDayIndex == 6) {
+          add(CompleteWeek());
+        }
+      } catch (e) {
+        emit(PlantError("Günlük ilerleme hatası: $e"));
+      }
+    });
+
     on<UpdatePlantStage>((event, emit) async {
-       // Optimistically update UI
+       // Optimistically update UI - assuming no halt for manual updates (though manual updates are deprecated)
        emit(PlantLoaded(event.newStage)); 
        try {
          await _repository.updatePlantStage(event.newStage);
          // Optionally reload to confirm
+         add(LoadPlantStage()); // Reload to get correct halted status
        } catch (e) {
          emit(PlantError("Failed to update plant: $e"));
          // Rollback could be handled here if needed
@@ -88,6 +149,41 @@ class PlantBloc extends Bloc<PlantEvent, PlantState> {
       } catch (e) {
         emit(PlantError("Failed to load history: $e"));
       }
+    });
+
+    on<CompleteWeek>((event, emit) async {
+      emit(PlantLoading());
+      try {
+         // Determine the actual stage before archiving
+         final currentStatus = await _repository.getCurrentPlantStage();
+         
+         // Archive current week with its actual result
+         await _repository.archiveAndResetWeek(currentStatus.stage);
+
+         // Notify UI about the archived stage
+         emit(PlantWeekArchived(currentStatus.stage));
+         
+         // Emit Seed stage for new week
+         emit(const PlantLoaded(PlantStage.seed));
+         
+         // Trigger history reload immediately so Success Garden is up to date
+         add(LoadPlantHistory());
+      } catch (e) {
+        emit(PlantError("Failed to reset week: $e"));
+      }
+    });
+
+    on<UpdateCycleNote>((event, emit) async {
+       try {
+         await _repository.updateCycleNote(event.cycleId, event.note);
+         add(LoadPlantHistory());
+       } catch (e) {
+         print("Failed to save note: $e");
+       }
+    });
+
+    on<ClearPlantData>((event, emit) {
+      emit(PlantInitial());
     });
   }
 }

@@ -14,7 +14,9 @@ class PlannerBloc extends Bloc<PlannerEvent, PlannerState> {
   }
 
   void _onLoadHabits(PlannerLoadHabits event, Emitter<PlannerState> emit) async {
-    emit(PlannerLoading());
+    if (event.showLoading) {
+      emit(PlannerLoading());
+    }
     try {
       final habits = await _repository.getHabitsForDate(event.date);
       emit(PlannerLoaded(habits, event.date));
@@ -24,10 +26,9 @@ class PlannerBloc extends Bloc<PlannerEvent, PlannerState> {
   }
 
   void _onAddHabit(PlannerAddHabit event, Emitter<PlannerState> emit) async {
-    // Optimistic update or reload? using reload for simplicity safely
     try {
       await _repository.addHabit(event.title, event.date);
-      add(PlannerLoadHabits(event.date));
+      add(PlannerLoadHabits(event.date, showLoading: false));
     } catch (e) {
       emit(PlannerError(e.toString()));
     }
@@ -36,10 +37,8 @@ class PlannerBloc extends Bloc<PlannerEvent, PlannerState> {
   void _onToggleHabit(PlannerToggleHabit event, Emitter<PlannerState> emit) async {
      try {
        await _repository.toggleHabitCompletion(event.habitId, event.isCompleted);
-       // We should reload to update the UI correctly or modify the current state locally.
-       // For MVP, if we are in Loaded state, we can trigger reload.
        if (state is PlannerLoaded) {
-          add(PlannerLoadHabits((state as PlannerLoaded).selectedDate));
+          add(PlannerLoadHabits((state as PlannerLoaded).selectedDate, showLoading: false));
        }
      } catch (e) {
        emit(PlannerError(e.toString()));
@@ -50,7 +49,7 @@ class PlannerBloc extends Bloc<PlannerEvent, PlannerState> {
     try {
       await _repository.deleteHabit(event.habitId);
        if (state is PlannerLoaded) {
-          add(PlannerLoadHabits((state as PlannerLoaded).selectedDate));
+          add(PlannerLoadHabits((state as PlannerLoaded).selectedDate, showLoading: false));
        }
     } catch (e) {
       emit(PlannerError(e.toString()));

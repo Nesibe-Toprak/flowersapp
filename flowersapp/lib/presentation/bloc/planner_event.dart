@@ -9,11 +9,12 @@ abstract class PlannerEvent extends Equatable {
 
 class PlannerLoadHabits extends PlannerEvent {
   final DateTime date;
+  final bool showLoading;
 
-  const PlannerLoadHabits(this.date);
+  const PlannerLoadHabits(this.date, {this.showLoading = true});
 
   @override
-  List<Object> get props => [date];
+  List<Object> get props => [date, showLoading];
 }
 
 class PlannerAddHabit extends PlannerEvent {
