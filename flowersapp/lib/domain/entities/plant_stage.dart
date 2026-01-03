@@ -3,9 +3,10 @@ enum PlantStage {
   germination,
   seedling,
   growth,
-  bud,
   growth_second,
-  flower
+  bud,
+  flower,
+  perseverance_badge
 }
 
 extension PlantStageExtension on PlantStage {
@@ -15,9 +16,10 @@ extension PlantStageExtension on PlantStage {
       case PlantStage.germination: return 'Çimlenme';
       case PlantStage.seedling: return 'Fide';
       case PlantStage.growth: return 'Büyüme';
-      case PlantStage.bud: return 'Tomurcuk';
       case PlantStage.growth_second: return 'Büyüme';
+      case PlantStage.bud: return 'Tomurcuk';
       case PlantStage.flower: return 'Çiçek';
+      case PlantStage.perseverance_badge: return 'Azim Rozeti';
     }
   }
 

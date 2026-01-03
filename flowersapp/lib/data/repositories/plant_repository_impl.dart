@@ -43,17 +43,12 @@ class PlantRepositoryImpl implements PlantRepository {
         if (dayHabits.isNotEmpty) {
           dayComplete = dayHabits.every((h) => h['is_completed'] == true);
         } else {
-          // If no habits for the day, consider it complete? 
-          // Or incomplete? Usually incomplete implies 'failed to do habits'.
-          // If no habits planned, maybe success?
-          // For now, let's assume 'no habits' = 'incomplete' if strict, OR 'complete' if lenient.
-          // Given "Salı günü hedeflediklerimin tümüne uymazsam", implies there ARE habits.
-          // Let's assume if no habits exist for a past day, it might be missed.
-          // BUT, to be safe, treat 'no habits' as 'nothing to do' -> incomplete for growth purposes?
-          // Let's assume dayComplete = false if empty.
-          dayComplete = false; 
+          // If no habits for the day, consider it complete (rest day logic)
+          dayComplete = true; 
         }
 
+        print('Checking Day $day. CurrentWeekday: $currentWeekday. DayComplete: $dayComplete');
+        
         if (day < currentWeekday) {
            // Past day
            if (!dayComplete) {
@@ -61,18 +56,22 @@ class PlantRepositoryImpl implements PlantRepository {
              // Stop counting further growth
              break;
            } else {
-             completedDays++;
+             // Only increment growth if explicitly contributing (habits exist)
+             if (dayHabits.isNotEmpty) {
+               completedDays++;
+             }
            }
         } else if (day == currentWeekday) {
-          // Today
-          if (dayComplete) {
-            completedDays++;
-          }
-          // If today is incomplete, it's not 'halted' yet, effectively just 'not grown yet today'.
+           // Today
+           // Only increment if habits exist and are complete
+           if (dayHabits.isNotEmpty && dayComplete) {
+             completedDays++;
+           }
         }
       }
 
-      // Map completed days to PlantStage (0 to 7)
+      // Map completed days to PlantStage (0 to 6)
+      // Strict mapping: Mon(0)->Seed ... Sun(6)->Flower
       PlantStage stage;
       if (completedDays >= 6) {
         stage = PlantStage.flower;
@@ -88,73 +87,12 @@ class PlantRepositoryImpl implements PlantRepository {
             stage = PlantStage.seed;
         }
       }
-
-      // Calculate Badge Eligibility
-      // A badge is earned if successDays > failedDays at end of week.
-      // We check if it is still POSSIBLE to achieve this.
-      int failedDays = 0;
-      for (int day = 1; day < currentWeekday; day++) {
-         if ((habitsByDay[day] ?? []).every((h) => h['is_completed'] == true) == false) {
-           failedDays++;
-         }
-      }
-      // If today is incomplete, we don't count it as failed yet for potential calculation, 
-      // but we do know we haven't succeeded yet.
-      // Actually 'isGrowthHalted' means we failed a past day or failed today?
-      // Existing logic:
-      // if (day < currentWeekday && !dayComplete) -> halted.
       
-      // Let's count max potential successes.
-      // Max Success = Current Successes + Remaining Days (including today if not done yet? No, today is halted if checked and failed?)
-      // Actually, if we are 'halted', it means we failed a scan.
-      // Let's count explicitly:
-      int potentialSuccesses = 0;
-      int currentFailures = 0;
-
-      for (int day = 1; day <= 7; day++) {
-        bool dayComplete = false;
-        final dayHabits = habitsByDay[day] ?? [];
-        if (dayHabits.isNotEmpty) {
-           dayComplete = dayHabits.every((h) => h['is_completed'] == true);
-        }
-
-        if (day < currentWeekday) {
-           if (dayComplete) potentialSuccesses++; 
-           else currentFailures++;
-        } else if (day == currentWeekday) {
-           // We can still succeed today if not already successful?
-           // If we are halted, it means we failed a past day.
-           // For today, if we are halted, we can still fix today? 
-           // Usually halted refers to "growth halted due to past failure".
-           // But let's assume "remaining days" includes today.
-           potentialSuccesses++; 
-        } else {
-           // Future
-           potentialSuccesses++;
-        }
-      }
-      
-      // Badge Condition: Success > Failure
-      // So if (potentialSuccesses > currentFailures), we can still earn it?
-      // Wait, Total Days = 7.
-      // If I fail 3 days, I can get 4 successes -> Badge.
-      // If I fail 4 days, max success 3 -> No Badge.
-      // So constraint is: failures < 4.
-      bool canEarnBadge = currentFailures < 4;
-
-      return PlantGrowthStatus(
-        stage: stage, 
-        isGrowthHalted: isGrowthHalted,
-        canEarnBadge: canEarnBadge,
-      );
+      return PlantGrowthStatus(stage: stage, isGrowthHalted: isGrowthHalted);
 
     } catch (e) {
       print('Error calculating plant stage: $e');
-      return const PlantGrowthStatus(
-        stage: PlantStage.seed, 
-        isGrowthHalted: false,
-        canEarnBadge: true, // Default to true or false? True allows hope.
-      );
+      return const PlantGrowthStatus(stage: PlantStage.seed, isGrowthHalted: false);
     }
   }
 

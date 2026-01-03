@@ -45,8 +45,10 @@ class PlannerRepositoryImpl implements PlannerRepository {
       
       await _supabase.from('daily_habits').insert({
         'id': const Uuid().v4(),
+        'user_id': userId,
         'title': title,
         'day_of_week': date.weekday,
+        'is_completed': false,
         // 'cycle_id': ... // TODO: Implement cycle management
       });
     } catch (e) {
